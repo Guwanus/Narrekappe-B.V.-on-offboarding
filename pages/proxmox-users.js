@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 export default function ProxmoxUsersPage() {
-  const [csvText, setCsvText] = useState('email,full_name,password\n');
+  const [csvText, setCsvText] = useState('first_name,last_name,password\n');
   const [csvFileName, setCsvFileName] = useState('');
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
@@ -53,7 +53,7 @@ export default function ProxmoxUsersPage() {
 
       setMessage({
         type: data.failed > 0 ? 'error' : 'success',
-        text: `Import klaar: ${data.success} gelukt, ${data.failed} mislukt`,
+        text: `Import done: ${data.success} success, ${data.failed} failed`,
       });
       await refresh();
     } catch (e2) {
@@ -72,7 +72,7 @@ export default function ProxmoxUsersPage() {
 
   async function deleteUser(user) {
     const label = user.email || user.userid;
-    const ok = confirm(`Weet je zeker dat je ${label} wilt verwijderen?`);
+    const ok = confirm(`Are you sure you ${label} want to delete?`);
     if (!ok) return;
 
     setLoading(true);
@@ -85,7 +85,7 @@ export default function ProxmoxUsersPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to delete user');
-      setMessage({ type: 'success', text: `User verwijderd: ${data.userid}` });
+      setMessage({ type: 'success', text: `User deleted: ${data.userid}` });
       await refresh();
     } catch (e) {
       setMessage({ type: 'error', text: String(e?.message || e) });
@@ -119,9 +119,9 @@ export default function ProxmoxUsersPage() {
       </header>
 
       <main className="container">
-        <h1>Proxmox gebruikersbeheer</h1>
+        <h1>Proxmox usermanagement</h1>
         <p className="muted">
-          Simpele pagina om users in Proxmox aan te maken en te verwijderen via de backend API.
+          Simple page to create and delete users in Proxmox.
         </p>
 
         {message ? (
@@ -131,9 +131,9 @@ export default function ProxmoxUsersPage() {
         ) : null}
 
         <section className="card" style={{ marginTop: 16 }}>
-          <h2>Users onboarden via CSV</h2>
+          <h2>Onboard users via .csv</h2>
           <p className="muted" style={{ marginTop: 4 }}>
-            CSV kolommen: <b>first_name,last_name,password</b> (wachtwoord min. 8 tekens).
+            CSV columns: <b>first_name,last_name,password</b> (password min. 8 characters).
           </p>
 
           <form className="contact-form" onSubmit={importCsv}>
@@ -147,7 +147,7 @@ export default function ProxmoxUsersPage() {
               />
               {csvFileName ? (
                 <p className="muted" style={{ marginTop: 6 }}>
-                  Geselecteerd: {csvFileName}
+                  Selected: {csvFileName}
                 </p>
               ) : null}
             </div>
@@ -162,7 +162,7 @@ export default function ProxmoxUsersPage() {
 
             <div className="form-actions">
               <button className="btn" type="submit" disabled={loading}>
-                {loading ? 'Bezig…' : 'Importeren'}
+                {loading ? 'Loading…' : 'Import'}
               </button>
               <button className="btn ghost" type="button" onClick={refresh} disabled={loading}>
                 Refresh
@@ -173,13 +173,13 @@ export default function ProxmoxUsersPage() {
 
         <section className="card" style={{ marginTop: 16 }}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h2 style={{ margin: 0 }}>Users overzicht</h2>
+            <h2 style={{ margin: 0 }}>Users overview</h2>
             <input
               className="form-input"
               style={{ maxWidth: 320 }}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Zoek op naam"
+              placeholder="Search name"
             />
           </div>
 
@@ -187,27 +187,26 @@ export default function ProxmoxUsersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-narrek-muted">
-                  <tr className="text-narrek-muted"></tr>
-                  <th className="text-left py-2">Naam</th>
-                  <th className="text-left py-2">Status</th>
-                  <th className="text-right py-2">Acties</th>
-                </tr>
-              </thead>
+                <th className="text-left py-3">Name</th>
+                <th className="text-left py-3">Status</th>
+                <th className="text-right py-3">Actions</th>
+              </tr>
+            </thead>
+  
               <tbody>
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-3 text-narrek-muted">
-                      {loading ? 'Laden…' : 'Geen users gevonden.'}
+                      {loading ? 'Loading…' : 'No users found.'}
                     </td>
                   </tr>
                 ) : (
                   filteredUsers.map((u) => (
                     <tr key={u.userid} className="border-t border-white/5">
-                      <td className="py-2">{u.email}</td>
                       <td className="py-2 text-narrek-muted">{u.fullName || '-'}</td>
                       <td className="py-2">
                         <span className={`status-badge ${u.enabled ? 'status-running' : 'status-stopped'}`}>
-                          {u.enabled ? 'Actief' : 'Uit'}
+                          {u.enabled ? 'Active' : 'Disabled'}
                         </span>
                       </td>
                       <td className="py-2 text-right">
@@ -217,7 +216,7 @@ export default function ProxmoxUsersPage() {
                           onClick={() => deleteUser(u)}
                           disabled={loading}
                         >
-                          Verwijderen
+                          Delete
                         </button>
                       </td>
                     </tr>
